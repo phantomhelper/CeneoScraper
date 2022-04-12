@@ -21,4 +21,5 @@
 
 1) Extraction of elements for a single opinion to separate variables
 2) Extraction of elements for a single opinion to one complex variable
-3) Extraction 
+3) Extraction of all opinions from single page to list
+4) Extraction of all opinions for certain product  and saving it to a file
