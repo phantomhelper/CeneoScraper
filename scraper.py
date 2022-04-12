@@ -1,71 +1,62 @@
-from importlib.resources import contents
-from bs4 import BeautifulSoup
+import json
+from turtle import pos
+from typing import Type
 import requests
-from translate import Translator
-# translator= Translator(to_lang="German")
-# translation = translator.translate("Good Morning!")
-# print (translation)
+from bs4 import BeautifulSoup
 
-url = "https://www.ceneo.pl/113706425#tab=reviews"
+url = "https://www.ceneo.pl/45863470#tab=reviews"
 
-r = requests.get(url)
 
-if r.status_code == 200:
-    print('[INFO]: Roger.')
+all_opinions = []
+while (url):
+    response = requests.get(url)
+    page_dom = BeautifulSoup(response.text, "html.parser")
+    opinions = page_dom.select("div.js_product-review")
 
-    soup = BeautifulSoup(r.text, 'html.parser')
-    opinions = soup.find_all("div", class_="js_product-review")
-    translator = Translator(to_lang="en")
     for opinion in opinions:
-        # print(opinion)
-        opinion_id = opinion.select("div")['data-entry-id']
-        author = opinion.select("span.user-post__author-name").text.strip()
-        rcmd = opinion.select("span.user-post__author-recomendation > em").strip()
-        score = opinion.select("span.user-post__score-count").strip()
-        content = opinion.select("div.user-post__text")
-        pros = opinion.select("div.review-feature__title--positives ~ div.review-feature__title")
-        cons = opinion.select("div.review-feature__title--positives ~ div.review-feature__title")
-        posted_on = opinion.select("span.user-post__published > time:nth-child(1)")['datetime']
-        bought_on = opinion.select("span.user-post__published > time:nth-child(2)")['datetime']
-        usefull = opinion.select("button.js_vote-yes")
-        useless = opinion.select("button.js_vote-no")
-
+        opinion_id = opinion["data-entry-id"]
+        author = opinion.select_one("span.user-post__author-name").text.strip()
+        try:
+            rcmd = opinion.select_one(
+                "span.user-post__author-recomendation > em").text.strip()
+        except TypeError:
+            rcmd = None
+        score = opinion.select_one("span.user-post__score-count").text.strip()
+        content = opinion.select_one("div.user-post__text").text.strip()
+        try:
+            posted_on = opinion.select_one(
+            "span.user-post__published > time:nth-child(1)")["datetime"]
+        except TypeError:
+            posted_on = None
+        bought_on = opinion.select_one(
+            "span.user-post__published > time:nth-child(2)")["datetime"]
+        useful_for = opinion.select_one("button.vote-yes > span").text.strip()
+        useless_for = opinion.select_one("button.vote-no > span").text.strip()
+        pros = opinion.select(
+            "div.review-feature__title--positives ~ div.review-feature__item")
         pros = [item.text.strip() for item in pros]
+        cons = opinion.select(
+            "div.review-feature__title--negatives ~ div.review-feature__item")
         cons = [item.text.strip() for item in cons]
 
+        single_opinion = {
+            "opinion_id": opinion_id,
+            "author": author,
+            "rcmd": rcmd,
+            "score": score,
+            "content": content,
+            "pros": pros,
+            "cons": cons,
+            "posted_on": posted_on,
+            "bought_on": bought_on,
+            "usefull": useful_for,
+            "useless": useless_for,
+        }
+        all_opinions.append(single_opinion)
+        try:
+            url = "https://www.ceneo.pl" + page_dom.select_one("a.pagination__next")["href"]
+        except TypeError:
+            url = None
 
-
-
-
-
-
-        # # Author name
-        # author_name = opinion.find("span", "user-post__author-name").text
-        # print(f"Author name: {author_name}")
-
-        # # Text
-        # text = opinion.find("div", 'user-post__text').text
-        # text = translator.translate(text)
-        # print(f"Content: \n{text}")
-
-        # # Advantages
-        # advantages = opinion.find_all("div", "review-feature__item")
-        # if advantages:
-        #     print("\nAdvantages:")
-        #     for advantage in advantages:
-        #         print(f" [+] {translator.translate(advantage.text)};")
-
-        # # Disadvantages
-        # disadvantages = opinion.find_all("div", "review-feature__title--negatives")
-        # if disadvantages:
-        #     print("\nDisadvantages:")
-        #     for disadvantage in disadvantages:
-        #         print(f" [+] {translator.translate(disadvantage.text)};")
-        print("\n- "*10)
-            
-
-    
-
-
-else:
-    print(f"[INFO]: Something went wrong...\nStatus code: {r.status_code}")
+with open("opinions/45863470.json","w", encoding="UTF-8") as f:
+    json.dump(all_opinions, f, indent=4, ensure_ascii=False)
