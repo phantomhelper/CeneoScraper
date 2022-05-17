@@ -1,15 +1,17 @@
+import os
 import json
+import time
+import logging
 import requests
-from translate import Translator
 from turtle import pos
 from typing import Type
 from bs4 import BeautifulSoup
-
+from googletrans import Translator
 
 def get_element(parrent, selector, attribute=None, return_list=False):
     try:
         if return_list:
-            return [item.text.strip() for item in parrent.select(selector)]
+            return ".".join([item.text.strip() for item in parrent.select(selector)])
         if attribute:
             return parrent.select_one(selector)[attribute]
         else:
@@ -17,10 +19,19 @@ def get_element(parrent, selector, attribute=None, return_list=False):
     except (AttributeError, TypeError):
         return None
 
+def translate(text):
+    global translator
+    global dest
+    global src
+    try:
+        time.sleep(5)
+        return translator.translate(text, src=src, dest=dest).text
+    except AttributeError as e:
+        logging.error("Translate: " + e)
 
-to_lang = 'en'
-from_lang = 'pl'
-translator = Translator(to_lang=to_lang,from_lang=from_lang)
+dest = 'en'
+src = 'pl'
+translator = Translator()
 product_id = input('Please enter a product\'s id: ')
 
 url = f"https://www.ceneo.pl/{product_id}#tab=reviews"
@@ -54,7 +65,10 @@ while (url):
         single_opinion["score"] = float(single_opinion["score"].split("/")[0].replace(",","."))
         single_opinion["usefull"] = int(single_opinion["usefull"])
         single_opinion["useless"] = int(single_opinion["useless"])
-        single_opinion["content_en"] = translator.translate(single_opinion['content'])
+        single_opinion["content_en"] = translate(single_opinion['content'])
+        single_opinion["pros_en"] = translate(single_opinion['pros'])
+        single_opinion["cons_en"] = translate(single_opinion['cons'])
+
 
         all_opinions.append(single_opinion)
         try:
