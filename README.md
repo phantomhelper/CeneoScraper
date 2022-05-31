@@ -24,8 +24,17 @@
 3) Extraction of all opinions from single page to list
 4) Extraction of all opinions for certain product  and saving it to a file
 5) Code refactoring and optimization
-    a)  Definitio of functions for extracting single element of a page from a HTML code
-    b) Creating of dictionary that describes opinions structure with selectors for particular opinion's elements
-    c) Using dictionary comprehension to extract all opinion's elements on the basis of opinions' structure dictionary
+    Definitio of functions for extracting single element of a page from a HTML code
+    Creating of dictionary that describes opinions structure with selectors for particular opinion's elements
+    Using dictionary comprehension to extract all opinion's elements on the basis of opinions' structure dictionary
 6) Adjustment of data types for different opinions' elements
 7) Translation of certain opinion's elements into English
+8) Analysis of extracted opinions
+    - Basic statistics
+        - Number of all opinions about the project
+        - Number of opinions with list of advantages
+        - Number of opinions with list of disadvantages
+        - Average gscore based on stars
+    - Plots
+        - Share of recommendations in total numbere of opinions
+        - Frequency histogram  of stars 

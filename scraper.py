@@ -20,14 +20,12 @@ def get_element(parrent, selector, attribute=None, return_list=False):
         return None
 
 def translate(text):
-    global translator
-    global dest
-    global src
     try:
-        time.sleep(5)
+        # time.sleep(5)
         return translator.translate(text, src=src, dest=dest).text
-    except AttributeError as e:
-        logging.error("Translate: " + e)
+    except (AttributeError, TypeError):
+        logging.error("Translate")
+        return ""
 
 dest = 'en'
 src = 'pl'
@@ -37,16 +35,16 @@ product_id = input('Please enter a product\'s id: ')
 url = f"https://www.ceneo.pl/{product_id}#tab=reviews"
 
 opinion_elements = {
-    "author":  ["span.user-post__author-name"],
-    "rcmd":  ["span.user-post__author-recomendation > em"],
-    "score": ["span.user-post__score-count"],
-    "content":  ["div.user-post__text"],
-    "pros":  ["div.review-feature__title--positives ~ div.review-feature__item", None, True],
-    "cons":  ["div.review-feature__title--negatives ~ div.review-feature__item", None, True],
-    "posted_on":  ["span.user-post__published > time:nth-child(1)", "datetime"],
-    "bought_on":  ["span.user-post__published > time:nth-child(2)", "datetime"],
-    "usefull":  ["button.vote-yes > span"],
-    "useless":  ["button.vote-no > span"],
+    "author":       ["span.user-post__author-name"],
+    "rcmd":         ["span.user-post__author-recomendation > em"],
+    "score":        ["span.user-post__score-count"],
+    "content":      ["div.user-post__text"],
+    "pros":         ["div.review-feature__title--positives ~ div.review-feature__item", None, True],
+    "cons":         ["div.review-feature__title--negatives ~ div.review-feature__item", None, True],
+    "posted_on":    ["span.user-post__published > time:nth-child(1)", "datetime"],
+    "bought_on":    ["span.user-post__published > time:nth-child(2)", "datetime"],
+    "usefull":      ["button.vote-yes > span"],
+    "useless":      ["button.vote-no > span"],
 }
 
 all_opinions = []
@@ -65,9 +63,9 @@ while (url):
         single_opinion["score"] = float(single_opinion["score"].split("/")[0].replace(",","."))
         single_opinion["usefull"] = int(single_opinion["usefull"])
         single_opinion["useless"] = int(single_opinion["useless"])
-        single_opinion["content_en"] = translate(single_opinion['content'])
-        single_opinion["pros_en"] = translate(single_opinion['pros'])
-        single_opinion["cons_en"] = translate(single_opinion['cons'])
+        single_opinion["content_en"] = translate(single_opinion['content']) if single_opinion["content"] else ""
+        single_opinion["pros_en"] = translate(single_opinion['pros']) if single_opinion["pros"] else ""
+        single_opinion["cons_en"] = translate(single_opinion['cons']) if single_opinion["cons"] else ""
 
 
         all_opinions.append(single_opinion)
